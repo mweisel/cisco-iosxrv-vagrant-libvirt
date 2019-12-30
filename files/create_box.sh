@@ -112,7 +112,7 @@ Vagrant.configure("2") do |config|
   # Disable default host <-> guest synced folder
   config.vm.synced_folder ".", "/vagrant", disabled: true
   # Set guest OS type to disable autodetection
-  config.vm.guest = :freebsd
+  config.vm.guest = :tinycore
 
   config.vm.provider :libvirt do |domain|
     domain.cpus = 1

@@ -81,17 +81,7 @@ vagrant box add --provider libvirt --name cisco-iosxrv-6.1.3 ./cisco-iosxrv.box
 ==> R1: Waiting for domain to get an IP address...
 ==> R1: Waiting for SSH to become available...
 ==> R1: Configuring and enabling network interfaces...
-SSH connection was reset! This usually happens when the machine is
-taking too long to reboot. First, try reloading your machine with
-`vagrant reload`, since a simple restart sometimes fixes things.
-If that doesn't work, destroy your machine and recreate it with
-a `vagrant destroy` followed by a `vagrant up`. If that doesn't work,
-contact support.
 ```
-
-> Note
-
-Disregard the `SSH connection was reset!` error. The instance is ready for SSH.
 
 <pre>
 $ <b>vagrant ssh R1</b>
