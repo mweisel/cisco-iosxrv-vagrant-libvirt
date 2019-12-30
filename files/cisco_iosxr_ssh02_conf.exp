@@ -1,0 +1,19 @@
+set timeout 60
+set prompt "(>|#)$"
+log_file -noappend "~/iosxrv-console.explog"
+
+spawn telnet 127.0.0.1 52099
+
+# marker to continue configuration
+expect "Connected"
+send "\r"
+
+# import the public key file for ssh public key auth
+expect -re $prompt
+send "crypto key import authentication rsa disk0:/vagrant.bin\r"
+expect -re $prompt
+
+# allow time for import process to complete
+sleep 10
+send "\r"
+expect -re $prompt

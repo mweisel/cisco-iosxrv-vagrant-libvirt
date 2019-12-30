@@ -1,0 +1,76 @@
+set timeout 300
+set prompt "(>|#)$"
+log_file -noappend "~/iosxrv-console.explog"
+
+spawn telnet 127.0.0.1 52099
+
+# marker to create administrative user
+expect "Press RETURN to get started"
+send "\r"
+
+# administrative user dialog
+expect "Enter root-system username"
+send "superuser\r"
+expect "Enter secret"
+send "superuser\r"
+expect "Enter secret again"
+send "superuser\r"
+
+# user access verification
+expect "Username:"
+send "superuser\r"
+expect "Password:"
+send "superuser\r"
+
+# marker to start configuration
+expect "SYSTEM CONFIGURATION COMPLETED"
+send "\r"
+
+# enter global configuration mode
+expect -re $prompt
+send "configure\r"
+
+# create the vagrant user 
+expect -re $prompt {
+    send "username vagrant\r"
+    send "group root-system\r"
+    send "secret vagrant\r"
+    send "exit\r"
+}
+
+# set the hostname and domain
+expect -re $prompt {
+    send "hostname xrv\r"
+    send "domain name example.com\r"
+}
+
+# configure some lab features
+expect -re $prompt {
+    send "domain lookup disable\r"
+    send "line default\r"
+    send "exec-timeout 0 0\r"
+    send "exit\r"
+    send "vty-pool default 0 4 line-template default\r"
+}
+
+# set the management interface
+expect -re $prompt {
+    send "interface MgmtEth0/0/CPU0/0\r"
+    send "ipv4 address dhcp\r"
+    send "no shutdown\r"
+    send "exit\r"
+}
+
+# commit the changes
+expect -re $prompt {
+    send "commit label VAGRANT-BASE\r"
+    send "end\r"
+}
+
+# allow time for commit to complete
+sleep 20
+send "\r"
+expect -re $prompt
+
+# log out the superuser user
+send "exit\r"

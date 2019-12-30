@@ -1,0 +1,38 @@
+set timeout 60
+set prompt "(>|#)$"
+log_file -noappend "~/iosxrv-console.explog"
+
+spawn telnet 127.0.0.1 52099
+
+# marker to log in
+expect -re "Press RETURN to get started|Connected"
+send "\r"
+
+# log in with the vagrant user
+expect "Username:"
+send "vagrant\r"
+expect "Password:"
+send "vagrant\r"
+
+# generate a rsa key pair
+expect -re $prompt
+send "crypto key generate rsa\r"
+expect "How many bits in the modulus"
+send "\r"
+
+# force the ssh server to accept only sshv2 client connections
+expect -re $prompt {
+    send "configure\r"
+    send "ssh server v2\r"
+}
+
+# commit the changes
+expect -re $prompt {
+    send "commit label VAGRANT-SSH\r"
+    send "end\r"
+}
+
+# allow time for commit to complete
+sleep 20
+send "\r"
+expect -re $prompt

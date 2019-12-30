@@ -1,0 +1,86 @@
+- name: create cisco ios xrv vagrant box
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    - disk_image_name: cisco-iosxrv.qcow2
+    - domain_name: cisco-iosxrv
+
+  tasks:
+    - name: "verify the {{ disk_image_name }} file is available"
+      stat:
+        path: "/var/lib/libvirt/images/{{ disk_image_name }}"
+      register: stat_result
+      failed_when: not stat_result.stat.exists
+
+    - name: verify the vagrant-libvirt network is active
+      command: virsh -c qemu:///system net-list --name
+      register: vnet_result
+      changed_when: no
+      failed_when: not vnet_result.stdout is search('vagrant-libvirt')
+
+    - name: define the domain
+      #command: virsh -c qemu:///system define ./templates/cisco-iosxrv.xml
+      command: virsh -c qemu:///system define ./templates/{{ domain_name }}.xml
+      register: define_result
+      failed_when: define_result.rc != 0
+
+    - name: start the domain
+      command: virsh -c qemu:///system start {{ domain_name }}
+      register: start_result
+      failed_when: start_result.rc != 0
+
+    - name: set the cisco iosxr base configuration
+      script: cisco_iosxr_base_conf.exp
+      args:
+        executable: expect
+
+    - name: set the cisco iosxr ssh configuration (password)
+      script: cisco_iosxr_ssh01_conf.exp
+      args:
+        executable: expect
+
+    - name: get the management interface ip address
+      shell: >
+        virsh net-dhcp-leases vagrant-libvirt 
+        --mac 52:54:00:4b:30:bf 
+        | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])'
+      register: mgmt_ip 
+      failed_when: mgmt_ip.rc != 0
+
+    # pubkey=$(curl -Ls https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub) 
+    # echo $pubkey | awk '{ print $2 }' | base64 -d > vagrant.bin 
+    - name: secure copy the vagrant.bin file
+      command: >
+        sshpass -p vagrant scp -o UserKnownHostsFile=/dev/null 
+        -o StrictHostKeyChecking=no 
+        ./files/vagrant.bin vagrant@{{ mgmt_ip.stdout }}:disk0:
+      register: scp_result
+      failed_when: scp_result.rc != 0
+
+    - name: set the cisco iosxr ssh configuration (key)
+      script: cisco_iosxr_ssh02_conf.exp
+      args:
+        executable: expect
+
+    - name: stop (destroy) the domain
+      command: virsh -c qemu:///system destroy {{ domain_name }}
+      register: destroy_result
+      failed_when: destroy_result.rc != 0
+
+    - name: undefine the domain
+      command: virsh -c qemu:///system undefine {{ domain_name }}
+      register: undefine_result
+      failed_when: undefine_result.rc != 0
+
+    - name: "copy the {{ disk_image_name }} file to the files directory"
+      copy:
+        src: "/var/lib/libvirt/images/{{ disk_image_name }}"
+        dest: "files/{{ disk_image_name }}"
+        remote_src: yes
+
+    # https://github.com/vagrant-libvirt/vagrant-libvirt/blob/master/tools/create_box.sh
+    - name: create the vagrant box artifact
+      script: create_box.sh ./files/{{ disk_image_name }}
+      args:
+        executable: bash
