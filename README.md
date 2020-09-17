@@ -11,7 +11,7 @@ A procedure for creating a Cisco IOS XRv Vagrant box for the [libvirt](https://l
   * [Expect](https://en.wikipedia.org/wiki/Expect)
   * [sshpass](https://linux.die.net/man/1/sshpass)
   * [Telnet](https://en.wikipedia.org/wiki/Telnet)
-  * [Vagrant](https://www.vagrantup.com)
+  * [Vagrant](https://www.vagrantup.com) <= 2.2.9
   * [vagrant-libvirt](https://github.com/vagrant-libvirt/vagrant-libvirt)
 
 ## Steps
