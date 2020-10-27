@@ -1,11 +1,13 @@
+# Cisco IOS XRv Vagrant box (libvirt)
+
 A procedure for creating a Cisco IOS XRv Vagrant box for the [libvirt](https://libvirt.org) provider.
 
 ## Prerequisites
 
-  * [Cisco VIRL](http://virl.cisco.com) account
+  * [Cisco Modeling Labs - Personal](https://learningnetworkstore.cisco.com/cisco-modeling-labs-personal) subscription
   * [Git](https://git-scm.com)
   * [Python](https://www.python.org)
-  * [Ansible](https://docs.ansible.com/ansible/latest/index.html)
+  * [Ansible](https://docs.ansible.com/ansible/latest/index.html) >= 2.7
   * [libvirt](https://libvirt.org) with client tools
   * [QEMU](https://www.qemu.org)
   * [Expect](https://en.wikipedia.org/wiki/Expect)
@@ -16,96 +18,126 @@ A procedure for creating a Cisco IOS XRv Vagrant box for the [libvirt](https://l
 
 ## Steps
 
-0. Verify the prerequisite tools are installed.
+0\. Verify the prerequisite tools are installed.
 
-```
-which git python ansible libvirtd virsh qemu-system-x86_64 expect sshpass telnet vagrant
-vagrant plugin list
-```
+<pre>
+$ <b>which git python ansible libvirtd virsh qemu-system-x86_64 expect telnet vagrant</b>
+$ <b>vagrant plugin list</b>
+vagrant-libvirt (0.2.1, global)
+</pre>
 
-1. Clone this GitHub repo and _cd_ into the directory.
+1\. Log in and download the CML-P reference platform ISO file to your `Downloads` directory.
 
-```
-git clone https://github.com/mweisel/cisco-iosxrv-vagrant-libvirt
-cd cisco-iosxrv-vagrant-libvirt
-```
+2\. Create a mount point directory.
 
-2. Log in and download the IOS XRv disk image file (iosxrv-k9-demo-6.1.3.qcow2) from your [Cisco VIRL](http://virl.cisco.com) account..
+<pre>
+$ <b>sudo mkdir /mnt/iso</b>
+</pre>
 
-3. Copy (and rename) the disk image file to the `/var/lib/libvirt/images` directory.
+3\. Mount the ISO file.
 
-```
-sudo cp $HOME/Downloads/iosxrv-k9-demo-6.1.3.qcow2 /var/lib/libvirt/images/cisco-iosxrv.qcow2
-```
+<pre>
+$ <b>cd $HOME/Downloads</b>
+$ <b>sudo mount -o loop refplat-20200409-fcs.iso /mnt/iso</b>
+</pre>
 
-4. Modify the file ownership and permissions. Note the owner will differ between Linux distributions. A couple of examples:
+4\. Copy (and rename) the Cisco IOS XRv disk image file to the `/var/lib/libvirt/images` directory.
 
-> Arch Linux
+<pre>
+$ <b>sudo cp /mnt/iso/virl-base-images/iosxrv-6-3-1/iosxrv-k9-demo-6.3.1.qcow2 /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
+</pre>
 
-```
-sudo chown nobody:kvm /var/lib/libvirt/images/cisco-iosxrv.qcow2
-sudo chmod u+x /var/lib/libvirt/images/cisco-iosxrv.qcow2
-```
+5\. Unmount the ISO file.
+
+<pre>
+$ <b>sudo umount /mnt/iso</b>
+</pre>
+
+6\. Modify the file ownership and permissions. Note the owner may differ between Linux distributions.
 
 > Ubuntu 18.04
 
-```
-sudo chown libvirt-qemu:kvm /var/lib/libvirt/images/cisco-iosxrv.qcow2
-sudo chmod u+x /var/lib/libvirt/images/cisco-iosxrv.qcow2
-```
+<pre>
+$ <b>sudo chown libvirt-qemu:kvm /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
+$ <b>sudo chmod u+x /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
+</pre>
 
-5. Start the `vagrant-libvirt` network (if not already started).
-
-```
-virsh -c qemu:///system net-list
-virsh -c qemu:///system net-start vagrant-libvirt
-```
-
-6. Run the Ansible playbook. 
-
-```
-ansible-playbook main.yml
-```
-
-7. Add the Vagrant box. 
-
-```
-vagrant box add --provider libvirt --name cisco-iosxrv-6.1.3 ./cisco-iosxrv.box
-```
-
-8. Vagrant Up!
-
-```
-...
-==> R1: Starting domain.
-==> R1: Waiting for domain to get an IP address...
-==> R1: Waiting for SSH to become available...
-==> R1: Configuring and enabling network interfaces...
-```
+> Arch Linux
 
 <pre>
-$ <b>vagrant ssh R1</b>
+$ <b>sudo chown nobody:kvm /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
+$ <b>sudo chmod u+x /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
+</pre>
 
-RP/0/0/CPU0:xrv#<b>show ssh</b>
-Mon Dec 30 05:16:57.705 UTC
-SSH version : Cisco-2.0 
+7\. Create the `boxes` directory.
 
-id  chan pty     location        state           userid    host                  ver authentication connection type
---------------------------------------------------------------------------------------------------------------------------
-Incoming sessions
-0   1    vty0    0/0/CPU0        SESSION_OPEN    vagrant   192.168.121.1         v2  rsa-pubkey     Command-Line-Interface 
+<pre>
+$ <b>mkdir $HOME/boxes</b>
+</pre>
 
-Outgoing sessions
+8\. Start the `vagrant-libvirt` network (if not already started).
 
+<pre>
+$ <b>virsh -c qemu:///system net-list</b>
+$ <b>virsh -c qemu:///system net-start vagrant-libvirt</b>
+</pre>
+
+9\. Clone this GitHub repo and _cd_ into the directory.
+
+<pre>
+$ <b>git clone https://github.com/mweisel/cisco-iosxrv-vagrant-libvirt</b>
+$ <b>cd cisco-iosxrv-vagrant-libvirt</b>
+</pre>
+
+10\. Run the Ansible playbook.
+
+<pre>
+$ <b>ansible-playbook main.yml</b>
+</pre>
+
+11\. Copy (and rename) the Vagrant box artifact to the `boxes` directory.
+
+<pre>
+$ <b>cp cisco-iosv.box $HOME/boxes/cisco-iosxrv-631.box</b>
+</pre>
+
+12\. Copy the box metadata file to the `boxes` directory.
+
+<pre>
+$ <b>cp ./files/cisco-iosxrv.json $HOME/boxes/</b>
+</pre>
+
+13\. Change the current working directory to `boxes`.
+
+<pre>
+$ <b>cd $HOME/boxes</b>
+</pre>
+
+14\. Substitute the `HOME` placeholder string in the box metadata file.
+
+<pre>
+$ <b>awk '/url/{gsub(/^ */,"");print}' cisco-iosxrv.json</b>
+"url": "file://<b>HOME</b>/boxes/cisco-iosxrv-631.box"
+
+$ <b>sed -i "s|HOME|${HOME}|" cisco-iosxrv.json</b>
+
+$ <b>awk '/url/{gsub(/^ */,"");print}' cisco-iosxrv.json</b>
+"url": "file://<b>/home/marc</b>/boxes/cisco-iosxrv-631.box"
+</pre>
+
+15\. Add the Vagrant box to the local inventory.
+
+<pre>
+$ <b>vagrant box add cisco-iosxrv.json</b>
 </pre>
 
 ## Debug
 
-To view the telnet session output for the `expect` task:
+View the telnet session output for the `expect` task:
 
-```
-tail -f ~/iosxrv-console.explog
-```
+<pre>
+$ <b>tail -f ~/iosxrv-console.explog</b>
+</pre>
 
 ## License
 
