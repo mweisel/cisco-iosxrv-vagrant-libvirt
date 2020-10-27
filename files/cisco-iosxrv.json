@@ -1,0 +1,15 @@
+{
+  "name": "cisco-iosxrv",
+  "description": "This box contains the Cisco IOS XRv Router.",
+  "versions": [
+    {
+      "version": "6.3.1",
+      "providers": [
+        {
+          "name": "libvirt",
+          "url": "file://HOME/boxes/cisco-iosxrv-631.box"
+        }
+      ]
+    }
+  ]
+}
