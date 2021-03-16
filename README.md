@@ -1,4 +1,6 @@
-# Cisco IOS XRv Vagrant box (libvirt)
+<img alt="Vagrant" src="https://img.shields.io/badge/vagrant%20-%231563FF.svg?&style=for-the-badge&logo=vagrant&logoColor=white"/>
+
+# Cisco IOS XRv Vagrant box
 
 A procedure for creating a Cisco IOS XRv Vagrant box for the [libvirt](https://libvirt.org) provider.
 
@@ -23,7 +25,7 @@ A procedure for creating a Cisco IOS XRv Vagrant box for the [libvirt](https://l
 <pre>
 $ <b>which git python ansible libvirtd virsh qemu-system-x86_64 expect sshpass telnet vagrant</b>
 $ <b>vagrant plugin list</b>
-vagrant-libvirt (0.2.1, global)
+vagrant-libvirt (0.3.0, global)
 </pre>
 
 1\. Log in and download the CML-P reference platform ISO file to your `Downloads` directory.
@@ -31,14 +33,14 @@ vagrant-libvirt (0.2.1, global)
 2\. Create a mount point directory.
 
 <pre>
-$ <b>sudo mkdir /mnt/iso</b>
+$ <b>sudo mkdir -p /mnt/iso</b>
 </pre>
 
 3\. Mount the ISO file.
 
 <pre>
 $ <b>cd $HOME/Downloads</b>
-$ <b>sudo mount -o loop refplat-20200409-fcs.iso /mnt/iso</b>
+$ <b>sudo mount -o loop refplat-20201020-fcs.iso /mnt/iso</b>
 </pre>
 
 4\. Copy (and rename) the Cisco IOS XRv disk image file to the `/var/lib/libvirt/images` directory.
@@ -72,7 +74,7 @@ $ <b>sudo chmod u+x /var/lib/libvirt/images/cisco-iosxrv.qcow2</b>
 7\. Create the `boxes` directory.
 
 <pre>
-$ <b>mkdir $HOME/boxes</b>
+$ <b>mkdir -p $HOME/boxes</b>
 </pre>
 
 8\. Start the `vagrant-libvirt` network (if not already started).
