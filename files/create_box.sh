@@ -111,18 +111,22 @@ Vagrant.configure("2") do |config|
   config.vm.boot_timeout = 300
   # Disable default host <-> guest synced folder
   config.vm.synced_folder ".", "/vagrant", disabled: true
+  # Disable fstab modification
+  config.vm.allow_fstab_modification = false
+  # Disable hosts modification
+  config.vm.allow_hosts_modification = false
   # Set guest OS type to disable autodetection
-  config.vm.guest = :tinycore
+  config.vm.guest = :freebsd
 
   config.vm.provider :libvirt do |domain|
     domain.cpus = 1
     domain.features = ['acpi']
     domain.memory = 2048
-    domain.disk_bus = "ide"
-    domain.disk_device = "hda"
-    domain.volume_cache = "unsafe"
-    domain.nic_model_type = "e1000"
-    domain.graphics_type = "none"
+    domain.disk_bus = 'ide'
+    domain.disk_device = 'hda'
+    domain.disk_driver :cache => 'none'
+    domain.nic_model_type = 'e1000'
+    domain.graphics_type = 'none'
   end
 end
 EOF
